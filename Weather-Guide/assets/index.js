@@ -34,3 +34,14 @@ function findCity() {
         }
     })
 }
+function getListCity(coordinates) {
+    apiURL = "https://api.openweathermap.org/data/2.5/onecall?lat=" + coordinates[0] + "&lon=" + coordinates[1] + "&exclude=minutely,hourly&units=imperial&appid=71311474f5b26fb7bbfa0bc1985b90cd";
+
+    fetch(apiURL).then(function (response) {
+        if (response.ok) {
+            response.json().then(function (data) {
+                getCurrentWeather(data);
+            })
+        }
+    })
+}
