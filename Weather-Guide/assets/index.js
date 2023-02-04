@@ -1,14 +1,12 @@
-/****************** Global Variables *******************************/
-// Get references to the #btn and input element
 var btn = document.querySelector("#btn-search");
-// get the reference to the div for the historic cities
+
 var containerHistoricCities = document.querySelector("#historic-Cities");
-// get the reference to the div for the Current cities
+
 var containerCurrent = document.querySelector("#targetCity");
-// get the reference to the div for the forecast cities
+
 var containerForecast = document.querySelector("#infoCity");
 
-//Array of Objects for localStores data
+
 var dataStore = JSON.parse(localStorage.getItem('cities')) || [];
 
 var urlIcon;
@@ -18,46 +16,33 @@ var urlIcon;
         urlIcon = 'https://openweathermap.org/img/wn/';
      }
 
-// look for UV index by latitude and longitude coordinates
 
-// Objetc for Weather conditions for a city
 var weatherCondition = [];
 
-/*******************************************************************/
 
-/************************* Functions *******************************/
-
-/* Load the fisrt time when the page load  */
 function start() {
 
-    // load the localStore
+  
     loadCity();
 
 }
 
-// function to retreive the information from localStore
 var loadCity = function(){
 
-    /*******************************************************************/
-    /*  Acceptance Criteria #1.2                                       */
-    /*  WHEN I search for a city                                       */
-    /*  THEN that city is added to the search history                  */
-    /*******************************************************************/
     cleaningElement(containerHistoricCities);
 
         if(dataStore){
-            // creating a unordered list to store the info
+           
             var ulElement = document.createElement("ul");
             ulElement.classList.add("list-unstyled");
             ulElement.classList.add("w-100");
             
-            //for loop to iterate through out the localStore
             for(var i = 0; i < dataStore.length; i++){
                 
                 var liElement = document.createElement("li");
-                // append a button with bootstraps classes inside each item
+                
                 liElement.innerHTML = "<button type='button' class='list-group-item list-group-item-action' attr='"+dataStore[i]+"'>" + dataStore[i] + "</button>";
-                // append the item into its container
+              
                 ulElement.appendChild(liElement);
                 }
 
@@ -65,115 +50,77 @@ var loadCity = function(){
             }
 };
 
-//listener or call function when is clicked on button on each city history using Jquery
 
 $(document).on("click", ".list-group-item", function(event) {
 
     event.preventDefault();
 
-    /*******************************************************************/
-    /*  Acceptance Criteria #5                                         */
-    /*  WHEN I click on a city in the search history                   */
-    /*  THEN I am again presented with current and future conditions   */
-    /*  for that city                                                  */
-    /*******************************************************************/
-
-    //getting the attribute that contain the name of the city
+   
     var city = $(this).attr("attr");
     callApiFetch(city);
 });
 
-// function to clean everything is inside the container
+
 var cleaningElement = function(element){
     element.innerHTML = "";
 };
 
-//converting °F to °C
+
 var converTemp = function(temp){
     return (Math.floor((parseFloat(temp) -32) * (5/9))).toString();
 };
 
-//converting Wind Speed form MPH to KHP
+
 var convertWSpeed = function(speed){
     return (Math.floor(parseFloat(speed) * 1.609)).toString();
 };
 
-//function to determine how much intensity is UV Index
+
 var findUV = function(uv){
 
-    /*******************************************************************/
-    /*  Acceptance Criteria #3                                         */
-    /*  WHEN I view the UV index                                       */
-    /*  THEN I am presented with a color that indicates whether the    */
-    /*  conditions are favorable, moderate, or severe                  */
-    /*******************************************************************/
-
-    //according to https://www.epa.gov/sites/production/files/documents/uviguide.pdf 
-    // there is a clasification about UV index in the world, for the porpuse of the 
-    // challenge it will be this values    
-    //  1-2 Low         (1 - 2.99999)   Green
-    //  3-5 Moderate    (3 - 5.99999)   Yellow 
-    //  6-7 High        (6 - 7.99999)   Red
-    //  8-10 Very High  (8 - 10.9999)   Black
-    //  11+ Extreme     (11+ )          Black
+   
 
     var indexUV = parseFloat(uv);
-    var bgColor;                            // variable to store the background color for each case in UV index
+    var bgColor;                            
     
     if(indexUV < 3){
-        bgColor = "bg-success";             // UV index: 1 - 2  Green
+        bgColor = "bg-success";             
     }
     else if( indexUV < 6){
-            bgColor = "bg-warning";         // UV index: 3 - 5  Yellow
+            bgColor = "bg-warning";         
         }
         else if(indexUV < 8){
-                bgColor = "bg-danger";      // UV index: 6 - 7  Red
+                bgColor = "bg-danger";      
             }
             else {
-                    bgColor = "bg-dark";    // UV index: 8 - 10 and 11+ Black
+                    bgColor = "bg-dark";    
             }
     return bgColor;
 };
 
-// showing the information about the weather stored in the array of object weatherCondition
 var weatherHTML = function (city, uv) {
 
-    /*******************************************************************/
-    /*  Acceptance Criteria #1.1                                       */
-    /*  WHEN I search for a city                                       */
-    /*  THEN I am presented with current and future conditions for     */
-    /*  that city                                                      */
-    /*******************************************************************/    
 
-    /*******************************************************************/
-    /*  Acceptance Criteria #2                                         */
-    /*  WHEN I view current weather conditions for that city           */
-    /*  THEN I am presented with the city name, the date, an icon      */
-    /*  representation of weather conditions, the temperature, the     */
-    /*  humidity, the wind speed, and the UV index                     */
-    /*******************************************************************/
-
-    //cleaning  the containers 
     cleaningElement(containerCurrent);
     cleaningElement(containerForecast); 
 
-    //Current City 
-    var ctn1 = document.createElement("div");                          // div for the City, date and weather condition
-    ctn1.classList.add("col-6");                                       // class from bootstrap
-    var ctn2 = document.createElement("div");                          // div for the City, date and weather condition
-    ctn2.classList.add("col-6");                                       // class from bootstrap
+    
+    var ctn1 = document.createElement("div");                        
+    ctn1.classList.add("col-6");                                      
+    var ctn2 = document.createElement("div");                         
+    ctn2.classList.add("col-6");                                      
 
     var cityEl = document.createElement("h2");
     var imageCurrent = document.createElement("img");
 
     cityEl.textContent = city + " (" + weatherCondition[0].dateT +")";
     imageCurrent.setAttribute("src", weatherCondition[0].icon);
-    //imageCurrent.classList.add("border");                            // class from bootstrap
-    imageCurrent.classList.add("bg-info");                             // class from bootstrap
+    //imageCurrent.classList.add("border");                            
+    imageCurrent.classList.add("bg-info");                            
     ctn1.appendChild(cityEl);
     ctn2.appendChild(imageCurrent);
-    var ctn3  = document.createElement("div");                          // div for humidity, wind speed, UV index and temperature
-    ctn3.classList.add("col-12");                       // class from bootstrap
+    var ctn3  = document.createElement("div");                          
+    ctn3.classList.add("col-12");                     
     ctn3.innerHTML =    "<p>Temperature: " + weatherCondition[0].temp + " °F / " + converTemp(weatherCondition[0].temp) + " °C</p>" + 
                         "<p>Humidity: " + weatherCondition[0].humidity + "% </p>" +
                         "<p>Wind Speed: " + weatherCondition[0].speed + " MPH / " + convertWSpeed(weatherCondition[0].speed) + " KPH </p>" +
@@ -183,30 +130,30 @@ var weatherHTML = function (city, uv) {
     containerCurrent.appendChild(ctn3);
 
     
-    var ctn6 = document.createElement("div");         //container to store the header h2 for <H2>5-Day Forecast:</H2>
-    ctn6.classList.add("row");                        // class from bootstrap
-    var ctn7 = document.createElement("div");         //container to store the col-12
-    ctn7.classList.add("col-12");                     // class from bootstrap
+    var ctn6 = document.createElement("div");        
+    ctn6.classList.add("row");                       
+    var ctn7 = document.createElement("div");         
+    ctn7.classList.add("col-12");                     
     ctn7.innerHTML = "<h2>5-Day Forecast</h2>";
     ctn6.appendChild(ctn7);
     containerForecast.appendChild(ctn6);
 
-    var ctn8 = document.createElement("div");         //container to store the card weather
-    ctn8.classList.add("d-flex");                     // class from bootstrap
+    var ctn8 = document.createElement("div");         
+    ctn8.classList.add("d-flex");                     
 
 
-    // for loop to get the information about the weather stored in the array weatherCondition
+    
     for(var i=1; i<weatherCondition.length; i++){    
         
-        var ctn4  = document.createElement("div");      // div for the boostrap card
-        //ctn4.classList.add("col-2");                    // class from bootstrap
-        ctn4.classList.add("card");                     // class from bootstrap
-        ctn4.classList.add("bg-primary");               // class from bootstrap
-        ctn4.classList.add("text-white");               // class from bootstrap
-        ctn4.classList.add("rounded");                  // class from bootstrap
-        ctn4.classList.add("mr-2");                     // class from bootstrap
+        var ctn4  = document.createElement("div");      
+                          
+        ctn4.classList.add("card");                     
+        ctn4.classList.add("bg-primary");               
+        ctn4.classList.add("text-white");               
+        ctn4.classList.add("rounded");                  
+        ctn4.classList.add("mr-2");                     
         ctn4.classList.add("flex-fill")
-        var ctn5  = document.createElement("div");      // div for the body card
+        var ctn5  = document.createElement("div");      
         ctn5.classList.add("card-body");
         //ctn5.classList.add("flex-fill");
         var title = document.createElement("h6");
